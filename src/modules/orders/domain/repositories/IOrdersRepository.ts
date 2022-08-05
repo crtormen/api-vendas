@@ -1,6 +1,6 @@
 import { ICreateOrder } from '../models/ICreateOrder';
 import { IOrder } from '../models/IOrder';
-// import { IOrderPaginate } from '../models/IOrderPaginate';
+import { IOrderPaginate } from '../models/IOrderPaginate';
 
 type SearchParams = {
     page: number;
@@ -10,7 +10,6 @@ type SearchParams = {
 
 export interface IOrdersRepository {
     findById(id: string): Promise<IOrder | null>;
-    findAll(): Promise<IOrder[]>;
-    // findAll({ page, skip, take }: SearchParams): Promise<IOrderPaginate>;
+    findAll({ page, skip, take }: SearchParams): Promise<IOrderPaginate>;
     create(data: ICreateOrder): Promise<IOrder>;
 }

@@ -4,14 +4,14 @@ import Product from '../entities/Product';
 import { IFindProducts } from '@modules/products/domain/models/IFindProducts';
 import { ICreateProduct } from '@modules/products/domain/models/ICreateProduct';
 import { IUpdateStockProduct } from '@modules/products/domain/models/IUpdateStockProduct';
-// import { IProductPaginate } from '@modules/products/domain/models/IProductPaginate';
 import { AppDataSource } from '@shared/infra/typeorm';
+import { IProductPaginate } from '@modules/products/domain/models/IProductPaginate';
 
-// type SearchParams = {
-//     page: number,
-//     skip: number,
-//     take: number,
-// };
+type SearchParams = {
+    page: number;
+    skip: number;
+    take: number;
+};
 
 class ProductsRepository implements IProductsRepository {
     private ormRepository: Repository<Product>;
@@ -60,35 +60,26 @@ class ProductsRepository implements IProductsRepository {
         return product;
     }
 
-    public async findAll(): Promise<Product[]> {
-        const products = await this.ormRepository.find();
+    public async findAll({
+        page,
+        skip,
+        take,
+    }: SearchParams): Promise<IProductPaginate> {
+        const [products, count] = await this.ormRepository
+            .createQueryBuilder()
+            .skip(skip)
+            .take(take)
+            .getManyAndCount();
 
-        return products;
+        const result = {
+            per_page: take,
+            total: count,
+            current_page: page,
+            data: products,
+        };
+
+        return result;
     }
-
-    //   public async findAll({
-    //     page,
-    //     skip,
-    //     take,
-    //   }: SearchParams): Promise<IProductPaginate> {
-    //     const [
-    //       products,
-    //       count,
-    //     ] = await this.ormRepository
-    //       .createQueryBuilder()
-    //       .skip(skip)
-    //       .take(take)
-    //       .getManyAndCount();
-
-    //     const result = {
-    //       per_page: take,
-    //       total: count,
-    //       current_page: page,
-    //       data: products,
-    //     };
-
-    //     return result;
-    //   }
 
     public async findAllByIds(products: IFindProducts[]): Promise<Product[]> {
         const productIds = products.map(product => product.id);

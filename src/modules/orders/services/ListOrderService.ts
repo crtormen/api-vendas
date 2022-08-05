@@ -1,7 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { IOrdersRepository } from '../domain/repositories/IOrdersRepository';
 import { IOrderPaginate } from '../domain/models/IOrderPaginate';
-import { IOrder } from '../domain/models/IOrder';
 
 interface SearchParams {
     page: number;
@@ -15,15 +14,17 @@ class ListOrderService {
         private ordersRepository: IOrdersRepository,
     ) {}
 
-    public async execute(): Promise<IOrder[]> {
-        // const take = limit;
-        // const skip = (Number(page) - 1) * take;
-        // const orders = await this.ordersRepository.findAll({
-        //     page,
-        //     skip,
-        //     take,
-        // });
-        const orders = await this.ordersRepository.findAll();
+    public async execute({
+        page,
+        limit,
+    }: SearchParams): Promise<IOrderPaginate> {
+        const take = limit;
+        const skip = (Number(page) - 1) * take;
+        const orders = await this.ordersRepository.findAll({
+            page,
+            skip,
+            take,
+        });
 
         return orders;
     }

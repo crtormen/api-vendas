@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-
+import redisCache from '@shared/cache/RedisCache';
 import { ICreateProduct } from '../domain/models/ICreateProduct';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
 import { IProduct } from '../domain/models/IProduct';
@@ -22,6 +22,9 @@ class CreateProductService {
         if (productExists) {
             throw new AppError('There is already one product with this name');
         }
+
+        await redisCache.invalidate('api-vendas-PRODUCT_LIST');
+
         //prepara o objeto que será enviado ao BD
         const product = await this.productsRepository.create({
             name,

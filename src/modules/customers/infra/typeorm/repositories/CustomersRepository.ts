@@ -1,5 +1,4 @@
 import { ICreateCustomer } from '@modules/customers/domain/models/ICreateCustomer';
-// import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
 import {
     ICustomersRepository,
     SearchParams,
@@ -7,6 +6,7 @@ import {
 import { Repository } from 'typeorm';
 import Customer from '../entities/Customer';
 import { AppDataSource } from '@shared/infra/typeorm';
+import { ICustomerPaginate } from '@modules/customers/domain/models/ICustomerPaginate';
 
 class CustomersRepository implements ICustomersRepository {
     private ormRepository: Repository<Customer>;
@@ -33,32 +33,26 @@ class CustomersRepository implements ICustomersRepository {
         await this.ormRepository.remove(customer);
     }
 
-    public async findAll(): Promise<Customer[]> {
-        const customers = await this.ormRepository.find();
+    public async findAll({
+        page,
+        skip,
+        take,
+    }: SearchParams): Promise<ICustomerPaginate> {
+        const [customers, count] = await this.ormRepository
+            .createQueryBuilder()
+            .skip(skip)
+            .take(take)
+            .getManyAndCount();
 
-        return customers;
+        const result = {
+            per_page: take,
+            total: count,
+            current_page: page,
+            data: customers,
+        };
+
+        return result;
     }
-
-    // public async findAll({
-    //     page,
-    //     skip,
-    //     take,
-    // }: SearchParams): Promise<ICustomerPaginate> {
-    //     const [customers, count] = await this.ormRepository
-    //         .createQueryBuilder()
-    //         .skip(skip)
-    //         .take(take)
-    //         .getManyAndCount();
-
-    //     const result = {
-    //         per_page: take,
-    //         total: count,
-    //         current_page: page,
-    //         data: customers,
-    //     };
-
-    //     return result;
-    // }
 
     public async findByName(name: string): Promise<Customer | null> {
         const customer = await this.ormRepository.findOneBy({

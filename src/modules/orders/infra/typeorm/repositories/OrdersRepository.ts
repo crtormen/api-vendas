@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import Order from '../entities/Order';
 import { ICreateOrder } from '@modules/orders/domain/models/ICreateOrder';
 import { IOrdersRepository } from '@modules/orders/domain/repositories/IOrdersRepository';
-// import { IOrderPaginate } from '@modules/orders/domain/models/IOrderPaginate';
+import { IOrderPaginate } from '@modules/orders/domain/models/IOrderPaginate';
 import { AppDataSource } from '@shared/infra/typeorm';
 import { IOrder } from '@modules/orders/domain/models/IOrder';
 
@@ -28,32 +28,26 @@ class OrdersRepository implements IOrdersRepository {
         return order;
     }
 
-    public async findAll(): Promise<IOrder[]> {
-        const orders = await this.ormRepository.find();
+    public async findAll({
+        page,
+        skip,
+        take,
+    }: SearchParams): Promise<IOrderPaginate> {
+        const [orders, count] = await this.ormRepository
+            .createQueryBuilder()
+            .skip(skip)
+            .take(take)
+            .getManyAndCount();
 
-        return orders;
+        const result = {
+            per_page: take,
+            total: count,
+            current_page: page,
+            data: orders,
+        };
+
+        return result;
     }
-
-    // public async findAll({
-    //     page,
-    //     skip,
-    //     take,
-    // }: SearchParams): Promise<IOrderPaginate> {
-    //     const [orders, count] = await this.ormRepository
-    //         .createQueryBuilder()
-    //         .skip(skip)
-    //         .take(take)
-    //         .getManyAndCount();
-
-    //     const result = {
-    //         per_page: take,
-    //         total: count,
-    //         current_page: page,
-    //         data: orders,
-    //     };
-
-    //     return result;
-    // }
 
     public async create({ customer, products }: ICreateOrder): Promise<Order> {
         const order = this.ormRepository.create({

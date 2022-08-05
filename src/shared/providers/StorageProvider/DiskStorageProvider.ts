@@ -1,0 +1,27 @@
+import uploadConfig from '@config/upload';
+import fs from 'fs';
+import path from 'path';
+
+export default class DiskStorageProvider {
+    public async saveFile(file: string): Promise<string> {
+        await fs.promises.rename(
+            //move from tmp to upload
+            path.resolve(uploadConfig.tmpFolder, file),
+            path.resolve(uploadConfig.directory, file),
+        );
+
+        return file;
+    }
+
+    public async deleteFile(file: string): Promise<void> {
+        const filePath = path.resolve(uploadConfig.directory, file);
+
+        try {
+            await fs.promises.stat(filePath); //file exists
+        } catch {
+            return;
+        }
+
+        await fs.promises.unlink(filePath);
+    }
+}

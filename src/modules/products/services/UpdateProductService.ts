@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-// import redisCache from '@shared/cache/RedisCache';
+import redisCache from '@shared/cache/RedisCache';
 import AppError from '@shared/errors/AppError';
 import { IUpdateProduct } from '../domain/models/IUpdateProduct';
 import { IProductsRepository } from '../domain/repositories/IProductsRepository';
@@ -30,7 +30,7 @@ class UpdateProductService {
             throw new AppError('There is already one product with this name');
         }
 
-        // await redisCache.invalidate('api-vendas-PRODUCT_LIST');
+        await redisCache.invalidate('api-vendas-PRODUCT_LIST');
 
         product.name = name;
         product.price = price;
